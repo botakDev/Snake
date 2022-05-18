@@ -1,54 +1,6 @@
 import pygame
 from pygame import Vector2
-
-class SnakeHead(pygame.sprite.Sprite):
-    def __init__(self, color):
-        super().__init__()
-        self.image = pygame.surface.Surface((45, 45))
-        self.image.fill(color)
-        self.rect = self.image.get_rect()
-        self.rect.center = Vector2(250, 250)
-
-        self.direction = "RIGHT"
-
-    def move(self):
-        if self.direction == "UP":
-            self.rect.center += Vector2(0, -50)
-        elif self.direction == "DOWN":
-            self.rect.center += Vector2(0, 50)
-        elif self.direction == "LEFT":
-            self.rect.center += Vector2(-50, 0)
-        elif self.direction == "RIGHT":
-            self.rect.center += Vector2(50, 0)
-
-    def update(self, events):
-        for event in events:
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_UP:
-                    self.direction = "UP"
-                elif event.key == pygame.K_DOWN:
-                    self.direction = "DOWN"
-                elif event.key == pygame.K_LEFT:
-                    self.direction = "LEFT"
-                elif event.key == pygame.K_RIGHT:
-                    self.direction = "RIGHT"
-
-    def get_pos(self):
-        return self.rect.center
-
-class SnakeBody(pygame.sprite.Sprite):
-    def __init__(self, color):
-        super().__init__()
-        self.image = pygame.surface.Surface((45, 45))
-        self.image.fill(color)
-        self.rect = self.image.get_rect()
-        self.rect.center = Vector2(250, 250)
-
-    def set_pos(self, pos):
-        self.rect.center = pos
-
-    def get_pos(self):
-        return self.rect.center
+import random
 
 #game initialize
 pygame.init()
@@ -62,44 +14,87 @@ window = pygame.display.set_mode((500, 500))
 BLACK = pygame.Color(0, 0, 0)
 WHITE = pygame.Color(255, 255, 255)
 ORANGE = pygame.Color(255, 68, 0)
+RED = pygame.Color(255, 15, 15)
 LIGHT_GRAY = pygame.Color(79, 79, 79)
 DARK_GRAY = pygame.Color(43, 43, 43)
 
 #snake
-snake_group = pygame.sprite.Group()
-snake_head = SnakeHead(ORANGE)
-snake_group.add(snake_head)
-snake_body = SnakeBody(DARK_GRAY)
-snake_group.add(snake_body)
+snake_width = 45
+snake_height = 45
 
+direction = "RIGHT"
 
+snake_parts = []
+snake_head = pygame.rect.Rect(252, 252, snake_width, snake_height)
+snake_parts.append(snake_head)
+
+#apples
+apple_width = 35
+apple_height = 35
+
+apples = []
+apple = pygame.rect.Rect(random.randint(1, 9) * 50 + 7, random.randint(1, 9) * 50 + 7, apple_width,
+                         apple_height)
+apples.append(apple)
 
 #game loop
 run = True
 while run:
     timer += 1
 
-    events = pygame.event.get()
-    for event in events:
+    for event in pygame.event.get():
         if event.type == pygame.QUIT:
             run = False
             pygame.quit()
 
-    if timer >= 800:
-        for i in range(len(snake_group.sprites())):
+        if event.type == pygame.KEYDOWN:
+            if pygame.key.get_pressed()[pygame.K_UP]:
+                direction = "UP"
+            elif pygame.key.get_pressed()[pygame.K_DOWN]:
+                direction = "DOWN"
+            elif pygame.key.get_pressed()[pygame.K_LEFT]:
+                direction = "LEFT"
+            elif pygame.key.get_pressed()[pygame.K_RIGHT]:
+                direction = "RIGHT"
+
+    if timer >= 900:
+        for i in range(len(snake_parts)):
             if i != 0:
-                pos = snake_group.sprites()[i - 1].get_pos()
-                snake_group.sprites()[i].set_pos(pos)
+                snake_parts[len(snake_parts) - i].center = snake_parts[i - 1].center
 
-        snake_body = SnakeBody(DARK_GRAY)
-        snake_group.add(snake_body)
+        if direction == "UP":
+            snake_parts[0].center += Vector2(0, -50)
+        elif direction == "DOWN":
+            snake_parts[0].center += Vector2(0, 50)
+        elif direction == "LEFT":
+            snake_parts[0].center += Vector2(-50, 0)
+        elif direction == "RIGHT":
+            snake_parts[0].center += Vector2(50, 0)
 
-        snake_group.sprites()[0].move()
-        timer -= 800
+        for i in range(len(apples)):
+            if apples[i].center == snake_parts[0].center:
+                apples.pop(i)
+                apple = pygame.rect.Rect(random.randint(1, 9) * 50 + 7, random.randint(1, 9) * 50 + 7, apple_width,
+                                         apple_height)
+                apples.append(apple)
 
-    snake_group.update(events)
+                snake_body = pygame.rect.Rect(snake_parts[0].centerx, snake_parts[0].centery, snake_width, snake_height)
+                snake_parts.append(snake_body)
+                print(snake_parts)
+
+        timer -= 900
 
     window.fill(LIGHT_GRAY)
-    snake_group.draw(window)
+
+    for i in range(len(snake_parts) + 1):
+        print(i)
+        if i == 0:
+            color = ORANGE
+        else:
+            color = DARK_GRAY
+        pygame.draw.rect(window, color, snake_parts[i - 1])
+
+    for rect in apples:
+        pygame.draw.rect(window, RED, rect)
 
     pygame.display.update()
