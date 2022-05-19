@@ -11,6 +11,7 @@ def check_same_pos(rect, rects):
 
 #game initialize
 pygame.init()
+clock = pygame.time.Clock()
 timer = 0
 
 #window
@@ -28,6 +29,7 @@ DARK_GRAY = pygame.Color(43, 43, 43)
 #snake
 snake_width = 45
 snake_height = 45
+snake_g_colors = [255]
 
 direction = "RIGHT"
 changed_direction = False
@@ -48,6 +50,7 @@ apples.append(apple)
 #game loop
 run = True
 while run:
+    clock.tick(90 * 1000)
     timer += 1
 
     for event in pygame.event.get():
@@ -109,21 +112,22 @@ while run:
 
                 snake_body = pygame.rect.Rect(snake_parts[snake_len - 1].x, snake_parts[snake_len - 1].y, snake_width, snake_height)
                 snake_parts.append(snake_body)
+                snake_g_colors.append(snake_g_colors[len(snake_g_colors) - 1] - 3)
+
+        snake_body = pygame.rect.Rect(snake_parts[snake_len - 1].x, snake_parts[snake_len - 1].y, snake_width,
+                                          snake_height)
+        snake_parts.append(snake_body)
+        snake_g_colors.append(snake_g_colors[len(snake_g_colors) - 1] - 2.3)
 
         timer -= 800
 
-    window.fill(LIGHT_GRAY)
+    window.fill(BLACK)
 
     for rect in apples:
         pygame.draw.rect(window, RED, rect)
 
     for i in range(len(snake_parts)):
-        if i == 0:
-            color = ORANGE
-        elif i % 2 == 1:
-            color = BLACK
-        else:
-            color = DARK_GRAY
+        color = pygame.Color(5, int(snake_g_colors[i]), 5)
         pygame.draw.rect(window, color, snake_parts[i])
 
     pygame.display.update()
