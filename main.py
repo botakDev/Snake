@@ -112,12 +112,7 @@ while run:
 
                 snake_body = pygame.rect.Rect(snake_parts[snake_len - 1].x, snake_parts[snake_len - 1].y, snake_width, snake_height)
                 snake_parts.append(snake_body)
-                snake_g_colors.append(snake_g_colors[len(snake_g_colors) - 1] - 3)
-
-        snake_body = pygame.rect.Rect(snake_parts[snake_len - 1].x, snake_parts[snake_len - 1].y, snake_width,
-                                          snake_height)
-        snake_parts.append(snake_body)
-        snake_g_colors.append(snake_g_colors[len(snake_g_colors) - 1] - 2.3)
+                snake_g_colors.append(snake_g_colors[len(snake_g_colors) - 1] - 2.3)
 
         timer -= 800
 
