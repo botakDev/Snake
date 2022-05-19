@@ -2,6 +2,13 @@ import pygame
 from pygame import Vector2
 import random
 
+def check_same_pos(rect, rects):
+    for i in range(len(rects)):
+        if rect.center == rects[i].center:
+            return True
+    return False
+
+
 #game initialize
 pygame.init()
 timer = 0
@@ -23,6 +30,7 @@ snake_width = 45
 snake_height = 45
 
 direction = "RIGHT"
+changed_direction = False
 
 snake_parts = []
 snake_head = pygame.rect.Rect(252, 252, snake_width, snake_height)
@@ -48,19 +56,26 @@ while run:
             pygame.quit()
 
         if event.type == pygame.KEYDOWN:
-            if pygame.key.get_pressed()[pygame.K_UP]:
-                direction = "UP"
-            elif pygame.key.get_pressed()[pygame.K_DOWN]:
-                direction = "DOWN"
-            elif pygame.key.get_pressed()[pygame.K_LEFT]:
-                direction = "LEFT"
-            elif pygame.key.get_pressed()[pygame.K_RIGHT]:
-                direction = "RIGHT"
+            if changed_direction == False:
+                if pygame.key.get_pressed()[pygame.K_UP] and direction != "DOWN":
+                    direction = "UP"
+                elif pygame.key.get_pressed()[pygame.K_DOWN] and direction != "UP":
+                    direction = "DOWN"
+                elif pygame.key.get_pressed()[pygame.K_LEFT] and direction != "RIGHT":
+                    direction = "LEFT"
+                elif pygame.key.get_pressed()[pygame.K_RIGHT] and direction != "LEFT":
+                    direction = "RIGHT"
+                changed_direction = True
 
-    if timer >= 900:
-        for i in range(len(snake_parts)):
-            if i != 0:
-                snake_parts[len(snake_parts) - i].center = snake_parts[i - 1].center
+    if timer >= 800:
+        changed_direction = False
+
+        snake_len = len(snake_parts)
+        apple_len = len(apples)
+
+        for i in range(snake_len):
+            if snake_len - i - 2 >= 0:
+                snake_parts[snake_len - i - 1].center = snake_parts[snake_len - i - 2].center
 
         if direction == "UP":
             snake_parts[0].center += Vector2(0, -50)
@@ -71,30 +86,44 @@ while run:
         elif direction == "RIGHT":
             snake_parts[0].center += Vector2(50, 0)
 
-        for i in range(len(apples)):
+        for i in range(snake_len):
+            if i >= 1:
+                if snake_parts[0].center == snake_parts[i].center:
+                    run = False
+                    pygame.quit()
+            if snake_parts[0].centerx < 0 or snake_parts[0].centerx > 500 or \
+                        snake_parts[0].centery < 0 or snake_parts[0].centery > 500:
+                run = False
+                pygame.quit()
+
+        for i in range(apple_len):
             if apples[i].center == snake_parts[0].center:
                 apples.pop(i)
                 apple = pygame.rect.Rect(random.randint(1, 9) * 50 + 7, random.randint(1, 9) * 50 + 7, apple_width,
                                          apple_height)
+                while check_same_pos(apple, snake_parts):
+                    apple = pygame.rect.Rect(random.randint(1, 9) * 50 + 7, random.randint(1, 9) * 50 + 7, apple_width,
+                                             apple_height)
+
                 apples.append(apple)
 
-                snake_body = pygame.rect.Rect(snake_parts[0].centerx, snake_parts[0].centery, snake_width, snake_height)
+                snake_body = pygame.rect.Rect(snake_parts[snake_len - 1].x, snake_parts[snake_len - 1].y, snake_width, snake_height)
                 snake_parts.append(snake_body)
-                print(snake_parts)
 
-        timer -= 900
+        timer -= 800
 
     window.fill(LIGHT_GRAY)
 
-    for i in range(len(snake_parts) + 1):
-        print(i)
-        if i == 0:
-            color = ORANGE
-        else:
-            color = DARK_GRAY
-        pygame.draw.rect(window, color, snake_parts[i - 1])
-
     for rect in apples:
         pygame.draw.rect(window, RED, rect)
+
+    for i in range(len(snake_parts)):
+        if i == 0:
+            color = ORANGE
+        elif i % 2 == 1:
+            color = BLACK
+        else:
+            color = DARK_GRAY
+        pygame.draw.rect(window, color, snake_parts[i])
 
     pygame.display.update()
