@@ -16,7 +16,9 @@ timer = 0
 
 #window
 pygame.display.set_caption("Snake")
-window = pygame.display.set_mode((500, 500))
+window_width = 1600
+window_height = 900
+window = pygame.display.set_mode((window_width, window_height))
 
 #colors
 BLACK = pygame.Color(0, 0, 0)
@@ -29,6 +31,7 @@ DARK_GRAY = pygame.Color(43, 43, 43)
 #snake
 snake_width = 45
 snake_height = 45
+space = 5
 snake_g_colors = [255]
 
 direction = "RIGHT"
@@ -50,7 +53,7 @@ apples.append(apple)
 #game loop
 run = True
 while run:
-    clock.tick(90 * 1000)
+    clock.tick(50 * 1000)
     timer += 1
 
     for event in pygame.event.get():
@@ -70,7 +73,7 @@ while run:
                     direction = "RIGHT"
                 changed_direction = True
 
-    if timer >= 800:
+    if timer >= 40:
         changed_direction = False
 
         snake_len = len(snake_parts)
@@ -94,19 +97,22 @@ while run:
                 if snake_parts[0].center == snake_parts[i].center:
                     run = False
                     pygame.quit()
-            if snake_parts[0].centerx < 0 or snake_parts[0].centerx > 500 or \
-                        snake_parts[0].centery < 0 or snake_parts[0].centery > 500:
+            if snake_parts[0].centerx < 0 or snake_parts[0].centerx > window_width or \
+                        snake_parts[0].centery < 0 or snake_parts[0].centery > window_height:
                 run = False
                 pygame.quit()
 
         for i in range(apple_len):
             if apples[i].center == snake_parts[0].center:
                 apples.pop(i)
-                apple = pygame.rect.Rect(random.randint(1, 9) * 50 + 7, random.randint(1, 9) * 50 + 7, apple_width,
-                                         apple_height)
+                apple = pygame.rect.Rect(random.randint(1, int(window_width / (snake_width + 5)) - 1) * (snake_height + 5) + 7,
+                                         random.randint(1, int(window_height / (snake_height + 5)) - 1) * (snake_height + 5) + 7,
+                                         apple_width, apple_height)
                 while check_same_pos(apple, snake_parts):
-                    apple = pygame.rect.Rect(random.randint(1, 9) * 50 + 7, random.randint(1, 9) * 50 + 7, apple_width,
-                                             apple_height)
+                    apple = pygame.rect.Rect(
+                        random.randint(1, int(window_height / (snake_width + 5)) - 1) * (snake_height + 5) + 7,
+                        random.randint(1, int(window_height / (snake_height + 5)) - 1) * (snake_height + 5) + 7,
+                        apple_width, apple_height)
 
                 apples.append(apple)
 
@@ -114,7 +120,7 @@ while run:
                 snake_parts.append(snake_body)
                 snake_g_colors.append(snake_g_colors[len(snake_g_colors) - 1] - 2.3)
 
-        timer -= 800
+        timer -= 40
 
     window.fill(BLACK)
 
